@@ -3,62 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BG Remover — free, private, in-browser</title>
+  <title>BG Remover — free, private, in-browser background removal</title>
+  <meta name="description" content="Remove image backgrounds free in your browser. Private — images never upload. Batch process and download all as ZIP." />
   <style>
-    :root { --ink:#1a1a1a; --muted:#5a5a5a; --paper:#f6f3ee; --line:#d9d2c5; --accent:#0b6e4f; }
+    :root { --ink:#1a1a1a; --muted:#5a5a5a; --paper:#f6f3ee; --line:#d9d2c5; --accent:#0b6e4f; --gold:#b8860b; }
     * { box-sizing: border-box; }
     body { margin:0; font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif; background:
       radial-gradient(900px 400px at 10% -10%, #e7efe9, transparent),
       radial-gradient(700px 300px at 100% 0%, #efe8dc, transparent),
       var(--paper); color:var(--ink); min-height:100vh; }
-    main { max-width:880px; margin:0 auto; padding:48px 20px 80px; }
+    main { max-width:960px; margin:0 auto; padding:44px 20px 80px; }
     h1 { font-size:clamp(2rem,5vw,3.2rem); letter-spacing:-0.03em; margin:0 0 8px; }
-    .sub { color:var(--muted); max-width:42rem; line-height:1.5; margin:0 0 28px; }
-    .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:20px; }
-    button, label.file {
+    .sub { color:var(--muted); max-width:44rem; line-height:1.5; margin:0 0 24px; }
+    .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:16px; }
+    button, label.file, a.btn {
       appearance:none; border:1px solid var(--ink); background:var(--ink); color:#fff;
-      padding:12px 18px; font:inherit; cursor:pointer; border-radius:0;
+      padding:12px 18px; font:inherit; cursor:pointer; border-radius:0; text-decoration:none; display:inline-block;
     }
-    button.secondary { background:transparent; color:var(--ink); }
+    button.secondary, a.btn.secondary { background:transparent; color:var(--ink); }
+    a.btn.gold { background:var(--gold); border-color:var(--gold); color:#fff; }
     button:disabled { opacity:0.45; cursor:not-allowed; }
     label.file input { display:none; }
-    .stage { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-    @media (max-width:700px){ .stage { grid-template-columns:1fr; } }
-    figure { margin:0; border:1px solid var(--line); background:
+    #drop { border:2px dashed var(--line); background:#fff8; padding:26px; text-align:center; color:var(--muted); margin-bottom:16px; transition:border-color .15s, background .15s; }
+    #drop.hot { border-color:var(--accent); background:#eef6f1; color:var(--ink); }
+    #status { min-height:1.4em; color:var(--accent); font-variant-numeric:tabular-nums; margin:6px 0 18px; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:14px; }
+    .card { border:1px solid var(--line); background:#fff; }
+    .card .thumb { min-height:150px; display:flex; align-items:center; justify-content:center; background:
       linear-gradient(45deg,#ddd 25%,transparent 25%),
       linear-gradient(-45deg,#ddd 25%,transparent 25%),
       linear-gradient(45deg,transparent 75%,#ddd 75%),
       linear-gradient(-45deg,transparent 75%,#ddd 75%);
-      background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0; background-color:#fff;
-      min-height:240px; display:flex; align-items:center; justify-content:center; }
-    figure img { max-width:100%; max-height:420px; display:block; }
-    figcaption { font-size:0.85rem; color:var(--muted); margin-top:8px; }
-    #status { min-height:1.4em; color:var(--accent); font-variant-numeric:tabular-nums; }
-    footer { margin-top:36px; color:var(--muted); font-size:0.9rem; }
+      background-size:16px 16px; background-position:0 0,0 8px,8px -8px,-8px 0; background-color:#fff; }
+    .card img { max-width:100%; max-height:180px; display:block; }
+    .card .meta { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; font-size:0.8rem; color:var(--muted); gap:8px; }
+    .card .meta a { color:var(--accent); white-space:nowrap; }
+    .card .st { font-size:0.75rem; color:var(--accent); }
+    .tip { margin-top:36px; padding:18px; border:1px solid var(--line); background:#fffdf7; }
+    .tip h3 { margin:0 0 6px; }
+    footer { margin-top:28px; color:var(--muted); font-size:0.9rem; }
     a { color:var(--accent); }
+    .count { font-size:0.85rem; color:var(--muted); }
   </style>
 </head>
 <body>
   <main>
     <h1>BG Remover</h1>
-    <p class="sub">Cut the shadow, keep the ghost. Runs <strong>entirely in your browser</strong> — image never leaves your device. Free forever for this demo. API for apps ships when the paid host is funded.</p>
+    <p class="sub">Cut the shadow, keep the ghost. Removes backgrounds <strong>entirely in your browser</strong> — images never leave your device. Free &amp; unlimited. Drop many at once, download all as a ZIP.</p>
+
+    <div id="drop">Drag &amp; drop images here, or use the button below</div>
 
     <div class="row">
-      <label class="file">Choose image<input id="file" type="file" accept="image/*" /></label>
-      <button id="run" class="secondary" disabled>Remove background</button>
-      <a id="dl" hidden><button type="button">Download PNG</button></a>
+      <label class="file">Choose images<input id="file" type="file" accept="image/*" multiple /></label>
+      <button id="run" class="secondary" disabled>Remove backgrounds</button>
+      <button id="zip" class="secondary" disabled>Download all (ZIP)</button>
+      <span id="count" class="count"></span>
     </div>
     <p id="status"></p>
 
-    <div class="stage">
-      <div>
-        <figure><img id="src" alt="Original preview" /></figure>
-        <figcaption>Original</figcaption>
-      </div>
-      <div>
-        <figure><img id="out" alt="Result preview" /></figure>
-        <figcaption>No background</figcaption>
-      </div>
+    <div id="grid" class="grid"></div>
+
+    <div class="tip">
+      <h3>Free forever. If it saved you time…</h3>
+      <p class="sub" style="margin-bottom:12px">No signup, no upload, no limits. Tips keep it free and fund the hosted API for developers.</p>
+      <a class="btn gold" id="bmc" href="https://www.buymeacoffee.com/" target="_blank" rel="noreferrer">☕ Buy me a coffee</a>
     </div>
 
     <footer>
@@ -69,51 +77,108 @@
 
   <script type="module">
     import { removeBackground } from "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm";
+    import JSZip from "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm";
 
     const fileEl = document.getElementById("file");
     const runBtn = document.getElementById("run");
-    const srcImg = document.getElementById("src");
-    const outImg = document.getElementById("out");
+    const zipBtn = document.getElementById("zip");
+    const grid = document.getElementById("grid");
     const status = document.getElementById("status");
-    const dl = document.getElementById("dl");
-    let blobUrl;
+    const countEl = document.getElementById("count");
+    const drop = document.getElementById("drop");
 
-    fileEl.addEventListener("change", () => {
-      const f = fileEl.files?.[0];
-      if (!f) return;
-      if (blobUrl) URL.revokeObjectURL(blobUrl);
-      blobUrl = URL.createObjectURL(f);
-      srcImg.src = blobUrl;
-      outImg.removeAttribute("src");
-      dl.hidden = true;
-      runBtn.disabled = false;
+    // items: { name, file, srcUrl, outUrl, outBlob, cardEls }
+    let items = [];
+
+    function baseName(n){ return (n.replace(/\.[^.]+$/, "") || "image"); }
+
+    function render() {
+      grid.innerHTML = "";
+      items.forEach((it, i) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        const thumb = document.createElement("div");
+        thumb.className = "thumb";
+        const img = document.createElement("img");
+        img.src = it.outUrl || it.srcUrl;
+        img.alt = it.name;
+        thumb.appendChild(img);
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const st = document.createElement("span");
+        st.className = "st";
+        st.textContent = it.outUrl ? "done" : (it.working ? (it.pct ?? "…") : "queued");
+        meta.appendChild(st);
+        if (it.outUrl) {
+          const a = document.createElement("a");
+          a.href = it.outUrl; a.download = baseName(it.name) + "-nobg.png"; a.textContent = "download";
+          meta.appendChild(a);
+        }
+        card.appendChild(thumb); card.appendChild(meta);
+        grid.appendChild(card);
+        it._st = st;
+      });
+      countEl.textContent = items.length ? `${items.length} image${items.length>1?"s":""}` : "";
+      runBtn.disabled = items.length === 0 || items.every(i => i.outUrl);
+      zipBtn.disabled = !items.some(i => i.outBlob);
+    }
+
+    function addFiles(fileList) {
+      const imgs = [...fileList].filter(f => f.type.startsWith("image/"));
+      if (!imgs.length) return;
+      imgs.forEach(f => items.push({ name: f.name, file: f, srcUrl: URL.createObjectURL(f), outUrl: null, outBlob: null }));
       status.textContent = "Ready.";
-    });
+      render();
+    }
+
+    fileEl.addEventListener("change", () => addFiles(fileEl.files));
+
+    ["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("hot"); }));
+    ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("hot"); }));
+    drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
 
     runBtn.addEventListener("click", async () => {
-      const f = fileEl.files?.[0];
-      if (!f) return;
       runBtn.disabled = true;
-      status.textContent = "Loading model (first run downloads ~40MB)…";
-      try {
-        const result = await removeBackground(f, {
-          model: "small",
-          progress: (key, current, total) => {
-            if (!total) return;
-            status.textContent = `${key}: ${Math.round((current / total) * 100)}%`;
-          },
-        });
-        const url = URL.createObjectURL(result);
-        outImg.src = url;
-        dl.href = url;
-        dl.download = (f.name.replace(/\.[^.]+$/, "") || "image") + "-nobg.png";
-        dl.hidden = false;
-        status.textContent = "Done. Private — never uploaded.";
-      } catch (err) {
-        status.textContent = "Failed: " + (err?.message || err);
-      } finally {
-        runBtn.disabled = !fileEl.files?.[0];
+      const todo = items.filter(i => !i.outUrl);
+      let done = 0;
+      for (const it of todo) {
+        it.working = true; it.pct = "0%"; if (it._st) it._st.textContent = "0%";
+        status.textContent = `Processing ${done+1} / ${todo.length}: ${it.name}`;
+        try {
+          const result = await removeBackground(it.file, {
+            model: "small",
+            progress: (key, cur, tot) => {
+              if (!tot) return;
+              it.pct = Math.round((cur/tot)*100) + "%";
+              if (it._st) it._st.textContent = it.pct;
+            },
+          });
+          it.outBlob = result;
+          it.outUrl = URL.createObjectURL(result);
+        } catch (err) {
+          if (it._st) it._st.textContent = "failed";
+          status.textContent = "Error on " + it.name + ": " + (err?.message || err);
+        }
+        it.working = false; done++;
+        render();
       }
+      status.textContent = `Done. ${items.filter(i=>i.outUrl).length} processed — private, never uploaded.`;
+      render();
+    });
+
+    zipBtn.addEventListener("click", async () => {
+      const ready = items.filter(i => i.outBlob);
+      if (!ready.length) return;
+      status.textContent = "Zipping…";
+      const zip = new JSZip();
+      ready.forEach(it => zip.file(baseName(it.name) + "-nobg.png", it.outBlob));
+      const blob = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "backgrounds-removed.zip";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      status.textContent = `Downloaded ZIP of ${ready.length} image${ready.length>1?"s":""}.`;
     });
   </script>
 </body>
