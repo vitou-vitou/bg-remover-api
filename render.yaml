@@ -3,7 +3,7 @@ services:
     name: bg-remover-api
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: free
+    plan: standard   # 2GB RAM — required: onnxruntime-node peaks ~1GB. free(512MB)/starter(512MB) OOM.
     healthCheckPath: /
     autoDeploy: true
     envVars:
