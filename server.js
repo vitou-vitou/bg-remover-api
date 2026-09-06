@@ -5,7 +5,11 @@
 import http from "node:http";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import sharp from "sharp";
 import { removeBackground } from "@imgly/background-removal-node";
+
+// Low-RAM host (512MB free tier): cap sharp workers so peak memory stays bounded.
+sharp.concurrency(1);
 
 const PORT = process.env.PORT || 3000;
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB input cap (trust boundary)
@@ -37,14 +41,25 @@ function readBody(req) {
   });
 }
 
+const MAX_EDGE = 1500; // downscale cap: memory scales with pixel count on low-RAM hosts.
+
+// Downscale to a Blob if the longest edge exceeds MAX_EDGE (bounds peak RAM). PNG keeps alpha.
+async function boundSize(buf) {
+  const meta = await sharp(buf).metadata();
+  if (Math.max(meta.width || 0, meta.height || 0) <= MAX_EDGE)
+    return new Blob([buf], { type: "image/" + (meta.format || "png") });
+  const out = await sharp(buf).resize(MAX_EDGE, MAX_EDGE, { fit: "inside" }).png().toBuffer();
+  return new Blob([out], { type: "image/png" });
+}
+
 // Resolve request into an image source removeBackground() accepts.
 async function toImageSource(req, body) {
   const ct = req.headers["content-type"] || "";
-  if (ct.startsWith("image/")) return new Blob([body], { type: ct }); // typed Blob (bare Buffer fails)
+  if (ct.startsWith("image/")) return boundSize(body); // typed Blob (bare Buffer fails)
   if (ct.includes("application/json")) {
     const { url, image } = JSON.parse(body.toString() || "{}");
     if (url) return String(url);
-    if (image) return new Blob([Buffer.from(image, "base64")], { type: "image/png" });
+    if (image) return boundSize(Buffer.from(image, "base64"));
     throw Object.assign(new Error('JSON must include "url" or "image" (base64)'), { code: 400 });
   }
   throw Object.assign(new Error("Send image/* bytes or application/json"), { code: 415 });
@@ -74,7 +89,8 @@ const server = http.createServer(async (req, res) => {
 
     const src = await toImageSource(req, body);
     const fmt = FORMATS[(u.searchParams.get("format") || "png").toLowerCase()] || "image/png";
-    const model = u.searchParams.get("model") === "small" ? "small" : "medium";
+    // Default to "small" model: fits 512MB hosts. Opt into "medium" only if RAM allows.
+    const model = u.searchParams.get("model") === "medium" ? "medium" : "small";
     const type = ["foreground", "background", "mask"].includes(u.searchParams.get("type"))
       ? u.searchParams.get("type")
       : "foreground";
