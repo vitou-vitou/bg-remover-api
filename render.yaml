@@ -3,9 +3,11 @@ services:
     name: bg-remover-api
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: standard   # 2GB RAM — required: onnxruntime-node peaks ~1GB. free(512MB)/starter(512MB) OOM.
+    # free = 512MB. onnxruntime peaks ~1GB → /remove OOMs on free.
+    # Stay free until revenue; upgrade to standard (2GB) then.
+    plan: free
     healthCheckPath: /
     autoDeploy: true
     envVars:
       - key: PROXY_SECRET
-        generateValue: true   # Render generates a random secret; copy it into RapidAPI proxy header
+        generateValue: true
