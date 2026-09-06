@@ -1,3 +1,13 @@
+---
+title: bg-remover-api
+emoji: 🖼️
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 3000
+pinned: false
+---
+
 # bg-remover-api
 
 Zero-cost background removal. No per-image fees, no privacy leak — model runs locally via `@imgly/background-removal-node` (AGPL). Stdlib `http` only, one dependency.
