@@ -1,0 +1,14 @@
+{
+  "name": "bg-remover-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@imgly/background-removal-node": "1.4.5"
+  }
+}
