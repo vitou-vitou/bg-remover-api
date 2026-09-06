@@ -1,13 +1,3 @@
----
-title: bg-remover-api
-emoji: 🖼️
-colorFrom: indigo
-colorTo: purple
-sdk: docker
-app_port: 3000
-pinned: false
----
-
 # bg-remover-api
 
 Zero-cost background removal. Model runs locally via IMG.LY (AGPL). Stdlib `http` API + free in-browser demo.
@@ -16,13 +6,13 @@ Zero-cost background removal. Model runs locally via IMG.LY (AGPL). Stdlib `http
 
 **https://vitou-vitou.github.io/bg-remover-api/**
 
-Runs entirely in the browser (`@imgly/background-removal`). Image never uploads. $0 hosting forever.
+Runs entirely in the browser (`@imgly/background-removal`). Images never upload. $0 hosting forever. Batch upload + ZIP download.
 
 ## API (needs ≥1GB RAM)
 
-`onnxruntime-node` peaks ~**1GB RSS** even on tiny images. Free Render (512MB) **cannot** run `/remove` (OOM → 502). Keep the free Render service for health checks only, or upgrade to **Standard 2GB** once revenue covers it (~$25/mo).
+The Node API (`server.js`) is verified working: real removal returns 200 + valid PNG in ~2s, and the `PROXY_SECRET` gate returns 401 without / 200 with the header.
 
-Hugging Face Docker Spaces also require **PRO** now for free CPU — not a free path.
+> **Hosting caveat:** `onnxruntime-node` peaks ~**1GB RSS** even on tiny images. Free 512MB hosts (Render free, Fly free) **OOM → 502**. Hugging Face Docker Spaces now need PRO. So the hosted API needs a **≥1GB paid host** (e.g. Render Standard 2GB, ~$25/mo). Deploy it only once the free browser demo proves demand. Until then the browser demo covers all real usage at $0.
 
 ### Run locally
 
